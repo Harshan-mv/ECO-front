@@ -1,0 +1,116 @@
+{
+  "Header": {
+    "title": "ECOVISION",
+    "paragraph": "EcoVision is an innovative platform designed to promote sustainability by integrating food redistribution, Green Score assessment, and climate change awareness."
+  },
+  "About": {
+    "paragraph": "EcoVision is an innovative platform designed to promote sustainability by integrating food redistribution, Green Score assessment, and climate change awareness. Built using cutting-edge technologies like AI-powered verification, geolocation-based food matching, and gamification, EcoVision empowers individuals and businesses to contribute to a greener planet. Our mission is to bridge the gap between food wastage and hunger while encouraging sustainable practices through an engaging and rewarding system.",
+    "Why": [
+      "Holistic Sustainability Approach",
+      "Geolocation-Based Food Matching",
+      "Gamified User Engagement",
+      "AI-Powered Verification"
+      
+    ],
+    "Why2": [
+      "Incentivized Green Scoring System",
+      "sustainable,waste-free future! 🌱",
+      "Leaderboard & Rewards System",
+      "Tech-Driven & Scalable ♻️"
+      
+    ]
+  },
+  "Gallery": [
+    {
+      "title": "SOIL EROSSION",
+      "largeImage": "img/portfolio/01-large.jpg",
+      "smallImage": "img/portfolio/01-small.jpg"
+    },
+    {
+      "title": "SUSTAINABLE ENERGY",
+      "largeImage": "img/portfolio/02-large.jpg",
+      "smallImage": "img/portfolio/02-small.jpg"
+    },
+    {
+      "title": "SOLAR ENERGY",
+      "largeImage": "img/portfolio/03-large.jpg",
+      "smallImage": "img/portfolio/03-small.jpg"
+    },
+    {
+      "title": "WIND ENERGY",
+      "largeImage": "img/portfolio/04-large.jpg",
+      "smallImage": "img/portfolio/04-small.jpg"
+    },
+    {
+      "title": "PLANT TREES",
+      "largeImage": "img/portfolio/05-large.jpg",
+      "smallImage": "img/portfolio/05-small.jpg"
+    },
+    {
+      "title": "SAVE TREES",
+      "largeImage": "img/portfolio/06-large.jpg",
+      "smallImage": "img/portfolio/06-small.jpg"
+    }
+  ],
+  "Services": [
+    {
+      "icon": "fa fa-leaf",
+      "name": "Climate Change Awareness Hub",
+      "text": "Provides real-time environmental insights and educational content to promote awareness about global climate challenges."
+    },
+    {
+      "icon": "fa fa-globe",
+      "name": "Live Climate Data",
+      "text": "Provides users with real-time environmental insights and personalized sustainability recommendations."
+    },
+    {
+      "icon": "fa fa-map-marker",
+      "name": "Real-Time Geolocation ",
+      "text": "Connects food donors with recipients in the most efficient way.Integrates food redistribution, environmental awareness."
+    },
+    {
+      "icon": "fa fa-pie-chart",
+      "name": "Green Score Assessment",
+      "text": "Evaluates users' sustainability efforts based on their eco-friendly actions, encouraging responsible behavior through rewards."
+    },
+    {
+      "icon": "fa fa-truck",
+      "name": "Food Redistribution System",
+      "text": " Connects food donors with recipients using real-time geolocation tracking, ensuring efficient and safe surplus food distribution."
+    },
+    {
+      "icon": "fa fa-trophy",
+      "name": "Gamified Engagement ",
+      "text": "Encourages participation through leaderboards, rewards, and community recognition to promote long-term involvement in sustainability efforts."
+    }
+  ],
+  
+  "Contact": {
+    "email": "hv754310@gmail.com",
+    "facebook": "fb.com",
+    "twitter": "twitter.com",
+    "youtube": "youtube.com"
+  },
+  "Features": [
+    {
+      "icon": "fa fa-comments-o",
+      "title": "Comprehensive Sustainability Approach",
+      "text": "Integrates food redistribution, environmental awareness, and gamification into one cohesive platform."
+    },
+    {
+      "icon": "fa fa-bullhorn",
+      "title": " Real-Time Geolocation ",
+      "text": "Connects food donors with recipients in the most efficient way."
+    },
+    {
+      "icon": "fa fa-group",
+      "title": "Leaderboard & Rewards System",
+      "text": "Encourages active participation by rewarding users for eco-friendly actions."
+    },
+    {
+      "icon": "fa fa-magic",
+      "title": " Live Climate Data ",
+      "text": "Provides users with real-time environmental insights and personalized sustainability recommendations."
+    }
+  ]
+}
