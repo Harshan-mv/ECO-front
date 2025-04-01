@@ -19,6 +19,9 @@ import Navbar from "./components/Navbar";
 import { AuthProvider, AuthContext } from "./context/AuthContext";
 import JsonData from "./data/data.json";
 import SmoothScroll from "smooth-scroll";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap/dist/js/bootstrap.bundle.min";
+import $ from "jquery";
 
 export const scroll = new SmoothScroll('a[href*="#"]', {
   speed: 1000,
