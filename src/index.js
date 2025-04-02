@@ -11,8 +11,6 @@ import "bootstrap/dist/js/bootstrap.bundle.min";
 
 // Importing external JS files
 
-import "./assets/js/jquery.1.11.1.js";
-import "./assets/js/bootstrap.js";
 
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
