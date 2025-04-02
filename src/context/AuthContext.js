@@ -1,12 +1,12 @@
 import { createContext, useReducer, useEffect } from "react";
-import axios from "axios";
+import api from "../utils/api";  // ✅ Import the configured Axios instance
 
 const AuthContext = createContext();
 
 const authReducer = (state, action) => {
   switch (action.type) {
     case "LOGIN":
-      console.log("✅ AuthContext Updated:", action.payload); // Debugging
+      console.log("✅ AuthContext Updated:", action.payload);
       return { ...state, isAuthenticated: true, user: action.payload };
     case "LOGOUT":
       localStorage.removeItem("user");
@@ -28,11 +28,22 @@ export const AuthProvider = ({ children }) => {
     if (storedUser) {
       dispatch({ type: "LOGIN", payload: JSON.parse(storedUser) });
     }
+
+    // ✅ Set Axios Interceptor once
+    api.interceptors.request.use((config) => {
+      const user = JSON.parse(localStorage.getItem("user"));
+      if (user?.token) {
+        config.headers.Authorization = `Bearer ${user.token}`;
+      }
+      return config;
+    });
   }, []);
-  
+
+  // 🔥 Login Function
   const login = async (emailOrUser, password, navigate) => {
     try {
       if (typeof emailOrUser === "object") {
+        // Google Sign-In
         const userData = {
           _id: emailOrUser.uid,
           name: emailOrUser.displayName,
@@ -44,59 +55,50 @@ export const AuthProvider = ({ children }) => {
         dispatch({ type: "LOGIN", payload: userData });
 
         console.log("✅ Google Sign-In Successful:", userData);
-
-        if (navigate) navigate("/dashboard"); // ✅ Added this check to prevent undefined navigate
+        navigate?.("/dashboard");
         return;
       }
 
-      // Regular Email/Password Login Flow
-      const res = await axios.post("http://localhost:5000/api/auth/login", {
-        email: emailOrUser,
-        password,
-      });
-
+      // ✅ Regular Email/Password Login
+      const res = await api.post("/auth/login", { email: emailOrUser, password });
       const { data } = res;
 
       localStorage.setItem("user", JSON.stringify(data));
       dispatch({ type: "LOGIN", payload: data });
 
       console.log("✅ AuthContext Updated:", data);
-      navigate("/dashboard");
+      navigate?.("/dashboard");
     } catch (error) {
       console.error("❌ Login Error:", error.response?.data?.message || "Login failed");
-      alert("❌ Login failed. Please try again.");
+      alert(error.response?.data?.message || "❌ Login failed. Please try again.");
     }
   };
 
-  
-  
+  // 🔥 Register Function
   const register = async (name, email, password) => {
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/register", { name, email, password });
+      const res = await api.post("/auth/register", { name, email, password });
       const { data } = res;
-  
+
       localStorage.setItem("user", JSON.stringify(data));
       dispatch({ type: "LOGIN", payload: data });
-  
+
       alert("✅ Registration successful! Please log in.");
     } catch (error) {
       console.error("❌ Signup Error:", error.response?.data?.message || "Signup failed");
-      alert("❌ Registration failed. Please try again.");
+      alert(error.response?.data?.message || "❌ Registration failed. Please try again.");
     }
   };
 
+  // 🔥 Logout Function
   const logout = async () => {
-    await axios.post("/api/auth/logout", {}, { withCredentials: true });
-    dispatch({ type: "LOGOUT" });
-  };
-
-  axios.interceptors.request.use((config) => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (user?.token) {
-      config.headers.Authorization = `Bearer ${user.token}`;
+    try {
+      await api.post("/auth/logout");
+      dispatch({ type: "LOGOUT" });
+    } catch (error) {
+      console.error("❌ Logout Error:", error.response?.data?.message || "Logout failed");
     }
-    return config;
-  });
+  };
 
   return (
     <AuthContext.Provider value={{ ...state, login, logout, register }}>

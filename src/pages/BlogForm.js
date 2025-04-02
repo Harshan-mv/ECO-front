@@ -1,7 +1,7 @@
 import React, { useState, useContext } from "react";
 import { TextField, Button, Typography, Container, Box } from "@mui/material";
 import { useNavigate } from "react-router-dom"; // Added for navigation
-import axios from "axios";
+import api from "../utils/api";
 import AuthContext from "../context/AuthContext"; // Imported for author details
 
 const BlogForm = () => {
@@ -25,7 +25,7 @@ const BlogForm = () => {
       imageFormData.append("image", file);
 
       try {
-        const res = await axios.post("http://localhost:5000/api/upload", imageFormData);
+        const res = await api.post("/upload", imageFormData);
         setFormData({ ...formData, image: res.data.imageUrl });
       } catch (error) {
         console.error("❌ Image Upload Failed:", error.message);
@@ -51,7 +51,7 @@ const BlogForm = () => {
     };
 
     try {
-      const res = await axios.post("http://localhost:5000/api/blogs", newBlog);
+      const res = await api.post("/blogs", newBlog);
       console.log("✅ Blog Created:", res.data);
 
       // ✅ Alert + Navigate to Dashboard

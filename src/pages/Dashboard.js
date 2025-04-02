@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from "react";
 import { Box, Typography, Grid, Card, CardContent, CardMedia } from "@mui/material";
-import axios from "axios";
+import api from "../utils/api";
 import AuthContext from "../context/AuthContext";
 
 const Dashboard = () => {
@@ -12,7 +12,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/blogs");
+        const res = await api.get("/blogs");
         setBlogs(res.data);
       } catch (error) {
         console.error("❌ Failed to fetch blogs:", error.message);
@@ -23,7 +23,7 @@ const Dashboard = () => {
       if (user && user._id) {
         try {
           console.log("Fetching Green Score for:", user._id);
-          const res = await axios.get(`http://localhost:5000/api/green-score/${user._id}`);
+          const res = await api.get(`/green-score/${user._id}`);
           console.log("API Response:", res.data);
           setGreenScore(res.data.greenScore || 0); // Ensure it's not undefined
         } catch (error) {
@@ -35,7 +35,7 @@ const Dashboard = () => {
     const fetchLeaders = async () => {
       try {
         console.log("Fetching leaderboard...");
-        const res = await axios.get("http://localhost:5000/api/green-score/leaders");
+        const res = await api.get("/green-score/leaders");
         console.log("Leaderboard API  Response:", res.data);
         setLeaders(res.data.leaders);
       } catch (error) {

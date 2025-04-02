@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { TextField, Button, Typography, MenuItem, Card, CardContent } from "@mui/material";
 import Tesseract from "tesseract.js";
+import api from "../utils/api"; // Import global Axios instance
 
 // Bill-related dropdown options
 const billTypes = ["Purchase Bill", "Consumable Bill"];
@@ -48,70 +49,52 @@ const GreenScoreForm = () => {
 
   const processOCRData = (text) => {
     const lines = text.split("\n").map((line) => line.trim());
-  
     let extractedData = {
       billNumber: (lines.find((line) => line.toLowerCase().includes("bill number")) || "").split(":").pop().trim(),
       itemPurchased: (lines.find((line) => line.toLowerCase().includes("item")) || "").split(":").pop().trim(),
       vendor: (lines.find((line) => line.toLowerCase().includes("vendor")) || "").split(":").pop().trim(),
       totalAmount: (lines.find((line) => line.toLowerCase().includes("amount")) || "").split(":").pop().trim(),
     };
-  
-    // Extract and format date
+
     let dateString = (lines.find((line) => line.toLowerCase().includes("date of purchase")) || "").split(":").pop().trim();
-    let formattedDate = formatDateToYYYYMMDD(dateString); // Convert to YYYY-MM-DD
-  
-    extractedData.purchaseDate = formattedDate; // Set the formatted date
-  
+    let formattedDate = formatDateToYYYYMMDD(dateString);
+    extractedData.purchaseDate = formattedDate;
+
     setFormData((prev) => ({ ...prev, ...extractedData }));
   };
-  
-  // Function to convert date format from DD/MM/YYYY to YYYY-MM-DD
+
   const formatDateToYYYYMMDD = (dateString) => {
     const dateParts = dateString.split("/");
     if (dateParts.length === 3) {
-      return `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`; // Rearranging DD/MM/YYYY → YYYY-MM-DD
+      return `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
     }
-    return ""; // Return empty if invalid format
+    return "";
   };
-  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
-    const userData = localStorage.getItem("user"); // Retrieve full user object
+    const userData = localStorage.getItem("user");
     const parsedUser = userData ? JSON.parse(userData) : null;
     const userId = parsedUser ? parsedUser._id : null;
-  
-    console.log("Extracted userId:", userId); // Debugging log
-  
+
     if (!userId) {
       alert("User ID not found. Please log in again.");
       return;
     }
-  
-    const submissionData = { ...formData, userId }; // Ensure _id is sent, not the whole object
-  
+
+    const submissionData = { ...formData, userId };
+
     try {
-      const response = await fetch("http://localhost:5000/api/green-score/submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(submissionData),
-      });
-  
-      const result = await response.json();
-      console.log("Server Response:", result);
-  
-      if (result.success) {
+      const response = await api.post("/green-score/submit", submissionData);
+      if (response.data.success) {
         alert("Green Score submitted successfully!");
       } else {
-        alert("Error submitting score: " + result.message);
+        alert("Error submitting score: " + response.data.message);
       }
     } catch (error) {
       console.error("Submission error:", error);
     }
   };
-  
-  
 
   return (
     <Card sx={{ maxWidth: 600, margin: "auto", mt: 4, p: 3, boxShadow: 3 }}>
@@ -122,18 +105,9 @@ const GreenScoreForm = () => {
         <input type="file" accept="image/*" onChange={handleFileChange} style={{ display: "block", margin: "auto", marginBottom: "16px" }} />
         {formData.ocrProcessing && <Typography variant="body2" align="center">Processing OCR...</Typography>}
         <form onSubmit={handleSubmit}>
-          <TextField
-            select
-            label="Bill Type"
-            fullWidth
-            value={formData.billType}
-            onChange={(e) => setFormData({ ...formData, billType: e.target.value })}
-            margin="normal"
-          >
+          <TextField select label="Bill Type" fullWidth value={formData.billType} onChange={(e) => setFormData({ ...formData, billType: e.target.value })} margin="normal">
             {billTypes.map((type) => (
-              <MenuItem key={type} value={type}>
-                {type}
-              </MenuItem>
+              <MenuItem key={type} value={type}>{type}</MenuItem>
             ))}
           </TextField>
           <TextField label="Bill Number" fullWidth value={formData.billNumber} onChange={(e) => setFormData({ ...formData, billNumber: e.target.value })} margin="normal" />
@@ -141,37 +115,16 @@ const GreenScoreForm = () => {
           <TextField label="Date of Purchase" type="date" fullWidth value={formData.purchaseDate} onChange={(e) => setFormData({ ...formData, purchaseDate: e.target.value })} margin="normal" InputLabelProps={{ shrink: true }} />
           <TextField label="Vendor/Supplier" fullWidth value={formData.vendor} onChange={(e) => setFormData({ ...formData, vendor: e.target.value })} margin="normal" />
           <TextField label="Total Amount" type="number" fullWidth value={formData.totalAmount} onChange={(e) => setFormData({ ...formData, totalAmount: e.target.value })} margin="normal" />
-          
-          <TextField
-            select
-            label="Purchase Mode"
-            fullWidth
-            value={formData.purchaseMode}
-            onChange={(e) => setFormData({ ...formData, purchaseMode: e.target.value })}
-            margin="normal"
-          >
+          <TextField select label="Purchase Mode" fullWidth value={formData.purchaseMode} onChange={(e) => setFormData({ ...formData, purchaseMode: e.target.value })} margin="normal">
             {purchaseModes.map((mode) => (
-              <MenuItem key={mode} value={mode}>
-                {mode}
-              </MenuItem>
+              <MenuItem key={mode} value={mode}>{mode}</MenuItem>
             ))}
           </TextField>
-          
-          <TextField
-            select
-            label="Eco Certification"
-            fullWidth
-            value={formData.ecoCertification}
-            onChange={(e) => setFormData({ ...formData, ecoCertification: e.target.value })}
-            margin="normal"
-          >
+          <TextField select label="Eco Certification" fullWidth value={formData.ecoCertification} onChange={(e) => setFormData({ ...formData, ecoCertification: e.target.value })} margin="normal">
             {ecoCertifications.map((cert) => (
-              <MenuItem key={cert} value={cert}>
-                {cert}
-              </MenuItem>
+              <MenuItem key={cert} value={cert}>{cert}</MenuItem>
             ))}
           </TextField>
-          
           <Button type="submit" variant="contained" sx={{ mt: 2, backgroundColor: "#0288d1", color: "white", ':hover': { backgroundColor: "#0277bd" } }} fullWidth>
             Submit
           </Button>

@@ -14,7 +14,7 @@ import {
   Avatar,
   Box,
 } from "@mui/material";
-import axios from "axios";
+import api from "../utils/api"; // ✅ Updated import
 
 const BlogDetails = () => {
   const { id } = useParams();
@@ -28,7 +28,7 @@ const BlogDetails = () => {
   useEffect(() => {
     const fetchBlogDetails = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/blogs/${id}`);
+        const res = await api.get(`/blogs/${id}`);
         setBlog(res.data);
         setComments(res.data.comments || []);
       } catch (error) {
@@ -51,7 +51,7 @@ const BlogDetails = () => {
     };
 
     try {
-      await axios.post(`http://localhost:5000/api/blogs/${id}/comments`, newComment);
+      await api.post(`/blogs/${id}/comments`, newComment);
       setComments([...comments, newComment]); // Update UI instantly
       setCommentText(""); // Clear input
     } catch (error) {

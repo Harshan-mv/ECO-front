@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Button, Card, CardContent, Typography, CardMedia, Grid } from "@mui/material";
+import api from "../utils/api";
 
 const FoodReceiver = () => {
   const [donations, setDonations] = useState([]);
@@ -10,9 +11,8 @@ const FoodReceiver = () => {
 
   const fetchAvailableFood = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/food-donations/available");
-      const data = await response.json();
-      setDonations(data);
+      const response = await api.get("/food-donations/available");
+      setDonations(response.data);
     } catch (error) {
       console.error("Error fetching food donations:", error);
     }
@@ -35,24 +35,12 @@ const FoodReceiver = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/food-donations/claim/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ receiverId })
-      });
-
-      const data = await response.json();
-      if (response.ok) {
-        alert(data.message);
-        fetchAvailableFood(); // Refresh the list after claiming
-      } else {
-        alert(`Error: ${data.message}`);
-      }
+      const response = await api.put(`/food-donations/claim/${id}`, { receiverId });
+      alert(response.data.message);
+      fetchAvailableFood(); // Refresh the list after claiming
     } catch (error) {
       console.error("Error claiming food:", error);
+      alert("An error occurred while claiming food.");
     }
   };
 
@@ -66,8 +54,8 @@ const FoodReceiver = () => {
       ) : (
         <Grid container spacing={3}>
           {donations.map((donation) => (
-            <Grid item xs={12} sm={6} md={4} key={donation._id}> {/* ✅ Makes 3 cards in a row on larger screens */}
-              <Card style={{ padding: "10px", maxWidth: "100%", height: "100%" }}> {/* ✅ Uniform Card Size */}
+            <Grid item xs={12} sm={6} md={4} key={donation._id}>
+              <Card style={{ padding: "10px", maxWidth: "100%", height: "100%" }}>
                 <CardMedia
                   component="img"
                   height="200"
@@ -86,7 +74,7 @@ const FoodReceiver = () => {
                   <Typography><strong>Storage Instructions:</strong> {donation.storageInstructions}</Typography>
                   <Typography><strong>Pickup Address:</strong> {donation.pickupAddress}</Typography>
 
-                  {donation.status === "claimed" ? ( // ✅ If already claimed, disable button
+                  {donation.status === "claimed" ? (
                     <Button variant="contained" color="secondary" disabled>
                       Already Claimed
                     </Button>

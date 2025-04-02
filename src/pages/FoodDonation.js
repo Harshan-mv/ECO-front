@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TextField, Button, Typography, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+import api from "../utils/api";
 
 const FoodDonationForm = () => {
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ const FoodDonationForm = () => {
   };
 
   const validateDates = () => {
-    const today = new Date().setHours(0, 0, 0, 0); // Remove time for strict comparison
+    const today = new Date().setHours(0, 0, 0, 0);
     const cookingDate = new Date(formData.cookingDate).setHours(0, 0, 0, 0);
     const expiryDate = new Date(formData.expiryDate).setHours(0, 0, 0, 0);
 
@@ -72,19 +73,10 @@ const FoodDonationForm = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:5000/api/food-donations", {
-        method: "POST",
-        body: formDataToSend,
-      });
-
-      const result = await response.json();
-      if (response.ok) {
-        alert("Donation Submitted Successfully!");
-        console.log("Response:", result);
-        navigate("/dashboard");
-      } else {
-        alert(`Error: ${result.message}`);
-      }
+      const response = await api.post("/food-donations", formDataToSend);
+      alert("Donation Submitted Successfully!");
+      console.log("Response:", response.data);
+      navigate("/dashboard");
     } catch (error) {
       console.error("Error submitting donation:", error);
       alert("An error occurred while submitting your donation.");
@@ -95,7 +87,6 @@ const FoodDonationForm = () => {
     <form onSubmit={handleSubmit}>
       <Typography variant="h4">Food Donation Form</Typography>
 
-      {/* Contact Information */}
       <TextField
         label="Full Name"
         fullWidth
@@ -111,7 +102,6 @@ const FoodDonationForm = () => {
         margin="normal"
       />
 
-      {/* Food Type Selection */}
       <FormControl fullWidth margin="normal">
         <InputLabel>Food Type</InputLabel>
         <Select value={formData.foodType} onChange={(e) => setFormData({ ...formData, foodType: e.target.value })}>
@@ -121,7 +111,6 @@ const FoodDonationForm = () => {
         </Select>
       </FormControl>
 
-      {/* Item & Weight */}
       <TextField
         label="Item Name"
         fullWidth
@@ -139,7 +128,6 @@ const FoodDonationForm = () => {
         margin="normal"
       />
 
-      {/* Cooking & Expiry Date */}
       <TextField
         label="Cooking Date"
         type="date"
@@ -159,7 +147,6 @@ const FoodDonationForm = () => {
         margin="normal"
       />
 
-      {/* Storage Instructions */}
       <TextField
         label="Storage Instructions"
         fullWidth
@@ -170,7 +157,6 @@ const FoodDonationForm = () => {
         margin="normal"
       />
 
-      {/* Pickup Address */}
       <TextField
         label="Pickup Address"
         fullWidth
@@ -179,10 +165,8 @@ const FoodDonationForm = () => {
         margin="normal"
       />
 
-      {/* Food Image Upload */}
       <input type="file" accept="image/*" onChange={handleImageChange} style={{ margin: "10px 0" }} />
 
-      {/* Submit Button */}
       <Button type="submit" variant="contained" color="primary" fullWidth>
         Submit
       </Button>
