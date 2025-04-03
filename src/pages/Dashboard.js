@@ -1,13 +1,14 @@
 import React, { useEffect, useState, useContext } from "react";
-import { Box, Typography, Grid, Card, CardContent, CardMedia } from "@mui/material";
+import { Box, Typography, Grid, Card, CardContent, CardMedia, IconButton } from "@mui/material";
+import { Delete as DeleteIcon } from "@mui/icons-material";
 import api from "../utils/api";
 import AuthContext from "../context/AuthContext";
 
 const Dashboard = () => {
   const { user } = useContext(AuthContext);
   const [blogs, setBlogs] = useState([]);
-  const [greenScore, setGreenScore] = useState(null); // Default to null to check if it's fetched
-  const [leaders, setLeaders] = useState([]); // Store leaderboard data
+  const [greenScore, setGreenScore] = useState(null);
+  const [leaders, setLeaders] = useState([]);
 
   useEffect(() => {
     const fetchBlogs = async () => {
@@ -25,7 +26,7 @@ const Dashboard = () => {
           console.log("Fetching Green Score for:", user._id);
           const res = await api.get(`/green-score/${user._id}`);
           console.log("API Response:", res.data);
-          setGreenScore(res.data.greenScore || 0); // Ensure it's not undefined
+          setGreenScore(res.data.greenScore || 0);
         } catch (error) {
           console.error("❌ Failed to fetch Green Score:", error.message);
         }
@@ -36,7 +37,7 @@ const Dashboard = () => {
       try {
         console.log("Fetching leaderboard...");
         const res = await api.get("/green-score/leaders");
-        console.log("Leaderboard API  Response:", res.data);
+        console.log("Leaderboard API Response:", res.data);
         setLeaders(res.data.leaders);
       } catch (error) {
         console.error("❌ Failed to fetch leaderboard:", error.message);
@@ -49,11 +50,30 @@ const Dashboard = () => {
       fetchGreenScore();
     }
 
-    fetchLeaders(); // Fetch leaderboard data
-
+    fetchLeaders();
   }, [user]);
 
-  // Determine Badge Based on Green Score
+  const handleDelete = async (blogId) => {
+    try {
+      await api.delete(`/blogs/${blogId}`, {
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`, // ✅ Ensure token is sent
+        },
+      });
+  
+      alert("Blog deleted successfully!");
+      setBlogs(blogs.filter(blog => blog._id !== blogId)); // ✅ Update state instead of full reload
+    } catch (error) {
+      console.error("❌ Error deleting blog:", error.response?.data || error.message);
+      alert("Failed to delete blog.");
+    }
+  };
+  
+  
+
+
+
   const getBadge = (score) => {
     if (score > 100) return "♻️ Eco Warrior";
     if (score > 50) return "🌎 Sustainability Champion";
@@ -64,22 +84,14 @@ const Dashboard = () => {
   return (
     <Box sx={{ width: "100%", p: 2, bgcolor: "#f5fffa" }}>
       <Grid container spacing={2}>
-  
-        {/* Left Section - Leaderboard */}
         <Grid item xs={12} md={6}>
           <Box sx={{ bgcolor: "#daa520", p: 3, borderRadius: 2 }}>
-            <Typography variant="h6" fontWeight="bold">
-              🌟 Leaderboard
-            </Typography>
+            <Typography variant="h6" fontWeight="bold">🌟 Leaderboard</Typography>
             {leaders.length > 0 ? (
               <>
-                <Typography variant="h6" fontWeight="bold">
-                  🏆 {leaders[0].name} - {leaders[0].greenScore} Points
-                </Typography>
+                <Typography variant="h6" fontWeight="bold">🏆 {leaders[0].name} - {leaders[0].greenScore} Points</Typography>
                 {leaders[1] && (
-                  <Typography variant="h6" sx={{ mt: 1, fontStyle: "italic" }}>
-                    🥈 {leaders[1].name} - {leaders[1].greenScore} Points
-                  </Typography>
+                  <Typography variant="h6" sx={{ mt: 1, fontStyle: "italic" }}>🥈 {leaders[1].name} - {leaders[1].greenScore} Points</Typography>
                 )}
               </>
             ) : (
@@ -87,64 +99,54 @@ const Dashboard = () => {
             )}
           </Box>
         </Grid>
-  
-        {/* Right Section - Green Score & Badge */}
+
         <Grid item xs={12} md={6}>
           <Box sx={{ bgcolor: "#e8f5e9", p: 3, borderRadius: 2 }}>
-            {/* Welcome Message */}
-          <Typography variant="h6" fontWeight="italic" sx={{color: "#339933" }}>
-              👋 Welcome, {user?.name || "User"}!
-          </Typography>
-            <Typography variant="h6" fontWeight="bold" sx={{ color: "#388E3C" }}>
-              🌱 Your Green Score: {greenScore !== null ? greenScore : "Loading..."}
-            </Typography>
-            <Typography variant="h6" sx={{ mt: 1, color: "#2e7d32", fontWeight: "bold" }}>
-              🏅 Badge: {greenScore !== null ? getBadge(greenScore) : "Loading..."}
-            </Typography>
+            <Typography variant="h6" fontWeight="italic" sx={{ color: "#339933" }}>👋 Welcome, {user?.name || "User"}!</Typography>
+            <Typography variant="h6" fontWeight="bold" sx={{ color: "#388E3C" }}>🌱 Your Green Score: {greenScore !== null ? greenScore : "Loading..."}</Typography>
+            <Typography variant="h6" sx={{ mt: 1, color: "#2e7d32", fontWeight: "bold" }}>🏅 Badge: {greenScore !== null ? getBadge(greenScore) : "Loading..."}</Typography>
           </Box>
         </Grid>
-  
       </Grid>
-  
-      {/* Blog Section */}
-      <Grid container spacing={3} sx={{ mt: 4 }}>
-  {blogs.map((blog) => (
-    <Grid key={blog._id} item xs={12} sm={4}>
-      <a
-        href={`/blogs/${blog._id}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        style={{ textDecoration: 'none' }}
-      >
-        <Card sx={{ cursor: "pointer", display: "flex", flexDirection: "column", height: "100%" }}>
-          {blog.image && (
-            <CardMedia
-              component="img"
-              height="200"
-              image={blog.image || "/images/byte&backpacklogo.jpg"}
-              alt={blog.title}
-            />
-          )}
-          <CardContent sx={{ flex: 1 }}>
-            <Typography variant="h6" fontWeight="bold">
-              {blog.title}
-            </Typography>
-            <Typography variant="body2" color="textSecondary">
-              Author: {blog.author}
-            </Typography>
-            <Typography variant="body2" sx={{ mt: 1 }}>
-              {blog.content.slice(0, 100)}...
-            </Typography>
-          </CardContent>
-        </Card>
-      </a>
-    </Grid>
-  ))}
-</Grid>
 
+      <Grid container spacing={3} sx={{ mt: 4 }}>
+        {blogs.map((blog) => (
+          <Grid key={blog._id} item xs={12} sm={4}>
+            <a href={`/blogs/${blog._id}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+              <Card sx={{ cursor: "pointer", display: "flex", flexDirection: "column", height: "100%", position: "relative" }}>
+                {blog.image && (
+                  <CardMedia
+                  component="img"
+                  height="200"
+                  image={blog.image.startsWith("http") ? blog.image : `https://eco-back-fd95.onrender.com${blog.image}`}
+                  alt={blog.title}
+                />
+                )}
+                <CardContent sx={{ flex: 1, position: "relative" }}>
+                  <Typography variant="h6" fontWeight="bold">{blog.title}</Typography>
+                  <Typography variant="body2" color="textSecondary">Author: {blog.author}</Typography>
+                  <Typography variant="body2" sx={{ mt: 1 }}>{blog.content.slice(0, 100)}...</Typography>
+
+                  {/* Delete Icon - Only for Author */}
+                  {user?.name === blog.author && (
+                    <IconButton
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleDelete(blog._id);
+                      }}
+                      sx={{ position: "absolute", top: 0, right: 0, color: "red" }}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  )}
+                </CardContent>
+              </Card>
+            </a>
+          </Grid>
+        ))}
+      </Grid>
     </Box>
   );
-  
 };
 
 export default Dashboard;

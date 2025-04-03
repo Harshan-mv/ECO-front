@@ -1,0 +1,9 @@
+{
+    "name": "Ecovision",
+    "short_name": "Ecovision",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#4CAF50"
+  }
+  
