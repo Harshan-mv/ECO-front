@@ -113,11 +113,13 @@ const Dashboard = () => {
 
                 <CardContent sx={{ flex: 1, position: "relative" }}>
                   <Typography variant="h6" fontWeight="bold">{blog.title}</Typography>
-                  <Typography variant="body2" color="textSecondary">Author: {blog.author}</Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    Author: {typeof blog.author === "object" ? blog.author.name : blog.author}
+                  </Typography>
                   <Typography variant="body2" sx={{ mt: 1 }}>{blog.content.slice(0, 100)}...</Typography>
 
                   {/* Delete Icon - Only for Author */}
-                  {user && blog.author === user._id && (
+                  {user && blog.author && blog.author._id === user._id && (
                     <IconButton
                       onClick={(e) => {
                         e.preventDefault();
