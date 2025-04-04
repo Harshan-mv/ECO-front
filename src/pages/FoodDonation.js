@@ -5,6 +5,9 @@ import api from "../utils/api";
 
 const FoodDonationForm = () => {
   const navigate = useNavigate();
+  const storedUser = JSON.parse(localStorage.getItem("user")); // 👈 get user from storage
+  const donorId = storedUser?.user?._id || ""; // 👈 fallback to empty string
+
   const [formData, setFormData] = useState({
     fullName: "",
     contactNumber: "",
@@ -16,7 +19,9 @@ const FoodDonationForm = () => {
     storageInstructions: "",
     pickupAddress: "",
     foodImage: null,
+    
   });
+
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -166,6 +171,13 @@ const FoodDonationForm = () => {
       />
 
       <input type="file" accept="image/*" onChange={handleImageChange} style={{ margin: "10px 0" }} />
+      {formData.foodImage && (
+          <img
+            src={URL.createObjectURL(formData.foodImage)}
+            alt="Preview"
+            style={{ maxWidth: "100%", margin: "10px 0" }}
+          />
+        )}
 
       <Button type="submit" variant="contained" color="primary" fullWidth>
         Submit

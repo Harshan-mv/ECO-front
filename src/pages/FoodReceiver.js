@@ -4,6 +4,8 @@ import api from "../utils/api";
 
 const FoodReceiver = () => {
   const [donations, setDonations] = useState([]);
+  const storedUser = JSON.parse(localStorage.getItem("user"));
+  const userId = storedUser?.user?._id;
 
   useEffect(() => {
     fetchAvailableFood();
@@ -18,16 +20,26 @@ const FoodReceiver = () => {
     }
   };
 
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this donation?")) {
+      try {
+        await api.delete(`/food-donations/${id}`);
+        fetchAvailableFood();
+      } catch (error) {
+        console.error("Error deleting donation:", error);
+        alert("Error deleting the donation.");
+      }
+    }
+  };
+
   const claimFood = async (id) => {
-    const userData = localStorage.getItem("user");
-    if (!userData) {
+    if (!storedUser) {
       alert("You must be logged in to claim food.");
       return;
     }
 
-    const user = JSON.parse(userData);
-    const receiverId = user._id;
-    const token = user.token;
+    const receiverId = storedUser?.user?._id;
+    const token = storedUser?.token;
 
     if (!receiverId || !token) {
       alert("You must be logged in to claim food.");
@@ -37,7 +49,7 @@ const FoodReceiver = () => {
     try {
       const response = await api.put(`/food-donations/claim/${id}`, { receiverId });
       alert(response.data.message);
-      fetchAvailableFood(); // Refresh the list after claiming
+      fetchAvailableFood();
     } catch (error) {
       console.error("Error claiming food:", error);
       alert("An error occurred while claiming food.");
@@ -55,11 +67,22 @@ const FoodReceiver = () => {
         <Grid container spacing={3}>
           {donations.map((donation) => (
             <Grid item xs={12} sm={6} md={4} key={donation._id}>
-              <Card style={{ padding: "10px", maxWidth: "100%", height: "100%" }}>
-              <CardMedia
+              <Card style={{ padding: "10px", maxWidth: "100%", height: "100%", position: "relative" }}>
+                {donation.donorId === userId && (
+                  <Button
+                    onClick={() => handleDelete(donation._id)}
+                    style={{ position: "absolute", top: 10, left: 10 }}
+                    variant="outlined"
+                    color="error"
+                  >
+                    Delete
+                  </Button>
+                )}
+
+                <CardMedia
                   component="img"
                   height="200"
-                  image={`https://eco-back-fd95.onrender.com${donation.foodImage}`}
+                  image={donation.foodImage}
                   alt={donation.itemName}
                   style={{ objectFit: "cover" }}
                 />
