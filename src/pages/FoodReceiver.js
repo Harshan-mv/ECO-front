@@ -36,23 +36,23 @@ const FoodReceiver = () => {
     }
   };
 
-  const claimFood = async (id) => {
-    if (!userId || !token) {
-      alert("You must be logged in to claim food.");
-      return;
-    }
-
+  const claimFood = async (foodId) => {
     try {
-      const response = await api.put(
-        `/food-donations/claim/${id}`,
-        { receiverId: userId },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      alert(response.data.message);
-      fetchAvailableFood();
+      console.log("🔑 User Token:", user?.token); // Check if token exists before request
+      if (!user?.token) {
+        console.error("❌ No token found in frontend.");
+        return;
+      }
+  
+      const res = await api.put(`/food/claim/${foodId}`, {}, {
+        headers: {
+          Authorization: `Bearer ${user.token}`, // Send the JWT token
+        },
+      });
+  
+      console.log("✅ Food claim response:", res.data);
     } catch (error) {
-      console.error("Error claiming food:", error.response?.data || error.message);
-      alert("An error occurred while claiming food.");
+      console.error("❌ Error claiming food:", error.response?.data || error.message);
     }
   };
 
