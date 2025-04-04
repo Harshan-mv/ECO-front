@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Button, Card, CardContent, Typography, CardMedia, Grid } from "@mui/material";
+import { Button, Card, CardContent, Typography, CardMedia, Grid, IconButton } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete"; // Import delete icon
 import api from "../utils/api";
 
 const FoodReceiver = () => {
   const [donations, setDonations] = useState([]);
   const storedUser = JSON.parse(localStorage.getItem("user"));
   const userId = storedUser?.user?._id;
+  const token = storedUser?.token; // Ensure token is available for API requests
 
   useEffect(() => {
     fetchAvailableFood();
@@ -23,35 +25,33 @@ const FoodReceiver = () => {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this donation?")) {
       try {
-        await api.delete(`/food-donations/${id}`);
+        await api.delete(`/food-donations/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }, // Include token in API request
+        });
         fetchAvailableFood();
       } catch (error) {
-        console.error("Error deleting donation:", error);
-        alert("Error deleting the donation.");
+        console.error("Error deleting donation:", error.response?.data || error.message);
+        alert("Error deleting the donation. Please try again.");
       }
     }
   };
 
   const claimFood = async (id) => {
-    if (!storedUser) {
-      alert("You must be logged in to claim food.");
-      return;
-    }
-
-    const receiverId = storedUser?.user?._id;
-    const token = storedUser?.token;
-
-    if (!receiverId || !token) {
+    if (!userId || !token) {
       alert("You must be logged in to claim food.");
       return;
     }
 
     try {
-      const response = await api.put(`/food-donations/claim/${id}`, { receiverId });
+      const response = await api.put(
+        `/food-donations/claim/${id}`,
+        { receiverId: userId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       alert(response.data.message);
       fetchAvailableFood();
     } catch (error) {
-      console.error("Error claiming food:", error);
+      console.error("Error claiming food:", error.response?.data || error.message);
       alert("An error occurred while claiming food.");
     }
   };
@@ -67,24 +67,13 @@ const FoodReceiver = () => {
         <Grid container spacing={3}>
           {donations.map((donation) => (
             <Grid item xs={12} sm={6} md={4} key={donation._id}>
-              <Card style={{ padding: "10px", maxWidth: "100%", height: "100%", position: "relative" }}>
-                {donation.donorId === userId && (
-                  <Button
-                    onClick={() => handleDelete(donation._id)}
-                    style={{ position: "absolute", top: 10, left: 10 }}
-                    variant="outlined"
-                    color="error"
-                  >
-                    Delete
-                  </Button>
-                )}
-
+              <Card sx={{ p: 2, maxWidth: "100%", height: "100%", position: "relative" }}>
                 <CardMedia
                   component="img"
                   height="200"
                   image={donation.foodImage}
                   alt={donation.itemName}
-                  style={{ objectFit: "cover" }}
+                  sx={{ objectFit: "cover" }}
                 />
                 <CardContent>
                   <Typography variant="h6">{donation.itemName}</Typography>
@@ -107,6 +96,19 @@ const FoodReceiver = () => {
                     </Button>
                   )}
                 </CardContent>
+
+                {/* Delete Button (Only Visible to Donor) */}
+                {donation.donorId === userId && (
+                  <IconButton
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleDelete(donation._id);
+                    }}
+                    sx={{ position: "absolute", bottom: 10, right: 10, color: "red" }}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                )}
               </Card>
             </Grid>
           ))}
