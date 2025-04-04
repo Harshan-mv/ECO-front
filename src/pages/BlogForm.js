@@ -53,8 +53,8 @@ const BlogForm = () => {
 
     const newBlog = {
       ...formData,
-      author: user?.name || "Anonymous",
-    };
+      author: user?._id, // ✅ Use user ID
+    };    
 
     try {
       const res = await api.post("/blogs", newBlog);

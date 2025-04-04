@@ -3,7 +3,6 @@ import { Box, Typography, Grid, Card, CardContent, CardMedia, IconButton } from 
 import { Delete as DeleteIcon } from "@mui/icons-material";
 import api from "../utils/api";
 import AuthContext from "../context/AuthContext";
-import axios from "axios";
 const Dashboard = () => {
   const { user } = useContext(AuthContext);
   const [blogs, setBlogs] = useState([]);
@@ -55,7 +54,7 @@ const Dashboard = () => {
 
   const handleDelete = async (blogId) => {
     try {
-      await axios.delete(`/api/blogs/${blogId}`);
+      await api.delete(`/blogs/${blogId}`);
       setBlogs(blogs.filter((blog) => blog._id !== blogId)); // Remove from UI
     } catch (error) {
       console.error("Failed to delete:", error);
@@ -118,7 +117,7 @@ const Dashboard = () => {
                   <Typography variant="body2" sx={{ mt: 1 }}>{blog.content.slice(0, 100)}...</Typography>
 
                   {/* Delete Icon - Only for Author */}
-                  {user?.name === blog.author && (
+                  {user && blog.author === user._id && (
                     <IconButton
                       onClick={(e) => {
                         e.preventDefault();
