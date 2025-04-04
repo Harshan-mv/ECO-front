@@ -23,7 +23,7 @@ const BlogForm = () => {
     if (file) {
       const imageFormData = new FormData();
       imageFormData.append("file", file);
-      imageFormData.append("upload_preset", "your_upload_preset"); // Replace with your actual upload preset
+      imageFormData.append("upload_preset", "cloudinarypreset"); // Replace with your actual upload preset
   
       try {
         const res = await fetch("https://api.cloudinary.com/v1_1/dxq7c4jok/image/upload", {
