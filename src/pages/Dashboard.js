@@ -103,14 +103,15 @@ const Dashboard = () => {
           <Grid key={blog._id} item xs={12} sm={4}>
             <a href={`/blogs/${blog._id}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
               <Card sx={{ cursor: "pointer", display: "flex", flexDirection: "column", height: "100%", position: "relative" }}>
-                {blog.image && (
-                  <CardMedia
+              {blog.image && (
+                <CardMedia
                   component="img"
                   height="200"
-                  image={blog.image.startsWith("http") ? blog.image : `https://eco-back-fd95.onrender.com/uploads/${blog.image}`}
+                  image={blog.image} // ✅ Direct Cloudinary URL
                   alt={blog.title}
                 />
-                )}
+              )}
+
                 <CardContent sx={{ flex: 1, position: "relative" }}>
                   <Typography variant="h6" fontWeight="bold">{blog.title}</Typography>
                   <Typography variant="body2" color="textSecondary">Author: {blog.author}</Typography>

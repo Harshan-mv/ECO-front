@@ -22,13 +22,19 @@ const BlogForm = () => {
     const file = e.target.files[0];
     if (file) {
       const imageFormData = new FormData();
-      imageFormData.append("image", file);
-
+      imageFormData.append("file", file);
+      imageFormData.append("upload_preset", "your_upload_preset"); // Replace with your actual upload preset
+  
       try {
-        const res = await api.post("/upload", imageFormData);
-        setFormData({ ...formData, image: res.data.imageUrl });
+        const res = await fetch("https://api.cloudinary.com/v1_1/dxq7c4jok/image/upload", {
+          method: "POST",
+          body: imageFormData,
+        });
+  
+        const data = await res.json();
+        setFormData({ ...formData, image: data.secure_url }); // ✅ Cloudinary URL
       } catch (error) {
-        console.error("❌ Image Upload Failed:", error.message);
+        console.error("❌ Cloudinary Upload Failed:", error.message);
       }
     }
   };
