@@ -3,7 +3,7 @@ import { Box, Typography, Grid, Card, CardContent, CardMedia, IconButton } from 
 import { Delete as DeleteIcon } from "@mui/icons-material";
 import api from "../utils/api";
 import AuthContext from "../context/AuthContext";
-
+import axios from "axios";
 const Dashboard = () => {
   const { user } = useContext(AuthContext);
   const [blogs, setBlogs] = useState([]);
@@ -55,25 +55,14 @@ const Dashboard = () => {
 
   const handleDelete = async (blogId) => {
     try {
-      await api.delete(`/blogs/${blogId}`, {
-        withCredentials: true,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`, // ✅ Ensure token is sent
-        },
-      });
-  
-      alert("Blog deleted successfully!");
-      setBlogs(blogs.filter(blog => blog._id !== blogId)); // ✅ Update state instead of full reload
+      await axios.delete(`/api/blogs/${blogId}`);
+      setBlogs(blogs.filter((blog) => blog._id !== blogId)); // Remove from UI
     } catch (error) {
-      console.error("❌ Error deleting blog:", error.response?.data || error.message);
-      alert("Failed to delete blog.");
+      console.error("Failed to delete:", error);
     }
   };
   
   
-
-
-
   const getBadge = (score) => {
     if (score > 100) return "♻️ Eco Warrior";
     if (score > 50) return "🌎 Sustainability Champion";
@@ -118,7 +107,7 @@ const Dashboard = () => {
                   <CardMedia
                   component="img"
                   height="200"
-                  image={blog.image.startsWith("http") ? blog.image : `https://eco-back-fd95.onrender.com${blog.image}`}
+                  image={blog.image.startsWith("http") ? blog.image : `https://eco-back-fd95.onrender.com/uploads/${blog.image}`}
                   alt={blog.title}
                 />
                 )}
