@@ -13,33 +13,38 @@ import {
   ListItemText,
   Avatar,
   Box,
+  Backdrop
 } from "@mui/material";
-import api from "../utils/api"; // ✅ Updated import
+import { OrbitProgress } from "react-loading-indicators";
+import { motion } from "framer-motion";
+import api from "../utils/api";
 
 const BlogDetails = () => {
   const { id } = useParams();
   const [blog, setBlog] = useState(null);
   const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  // Simulated logged-in user
   const loggedInUser = localStorage.getItem("username") || "Guest";
 
   useEffect(() => {
     const fetchBlogDetails = async () => {
+      setLoading(true);
       try {
         const res = await api.get(`/blogs/${id}`);
         setBlog(res.data);
         setComments(res.data.comments || []);
       } catch (error) {
         console.error("❌ Failed to fetch blog details:", error.message);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchBlogDetails();
   }, [id]);
 
-  // Handle Comment Submission
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
     if (!commentText.trim()) return;
@@ -52,18 +57,13 @@ const BlogDetails = () => {
 
     try {
       await api.post(`/blogs/${id}/comments`, newComment);
-      setComments([...comments, newComment]); // Update UI instantly
-      setCommentText(""); // Clear input
+      setComments([...comments, newComment]);
+      setCommentText("");
     } catch (error) {
       console.error("❌ Failed to add comment:", error.message);
     }
   };
 
-  if (!blog) {
-    return <Typography>Loading...</Typography>;
-  }
-
-  // ✅ Format Date for Better Readability
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
@@ -72,62 +72,70 @@ const BlogDetails = () => {
     });
   };
 
+  if (loading) {
+    return (
+      <Backdrop open={true} sx={{ zIndex: 9999, color: "#fff", flexDirection: "column" }}>
+        <OrbitProgress color={["#3160cc", "#cc31ad", "#cc9d31", "#31cc4f"]} size={100} />
+        <Typography mt={2}>Loading blog...</Typography>
+      </Backdrop>
+    );
+  }
+
   return (
     <Container maxWidth="md">
-      <Card>
-        {blog.image && (
-          <CardMedia component="img" height="400" image={blog.image} alt={blog.title} />
-        )}
-        <CardContent>
-          <Typography variant="h4" fontWeight="bold" gutterBottom>
-            {blog.title}
-          </Typography>
-          <Typography variant="body2" color="textSecondary" gutterBottom>
-            Author: <strong>{blog.author}</strong>
-          </Typography>
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <Card sx={{ mt: 3 }}>
+          {blog.image && (
+            <CardMedia component="img" height="400" image={blog.image} alt={blog.title} />
+          )}
+          <CardContent>
+            <Typography variant="h4" fontWeight="bold" gutterBottom>
+              {blog.title}
+            </Typography>
+            <Typography variant="body2" color="textSecondary" gutterBottom>
+              Author: <strong>{blog.author}</strong>
+            </Typography>
+            <Typography variant="body2" color="textSecondary" gutterBottom>
+              Published on: <strong>{formatDate(blog.createdAt)}</strong>
+            </Typography>
+            <Typography variant="body1" sx={{ mt: 2 }}>{blog.content}</Typography>
 
-          {/* ✅ Date of Publish */}
-          <Typography variant="body2" color="textSecondary" gutterBottom>
-            Published on: <strong>{formatDate(blog.createdAt)}</strong>
-          </Typography>
+            {/* Comments */}
+            <Typography variant="h6" sx={{ mt: 3 }}>Comments</Typography>
+            <List>
+              {comments.length > 0 ? (
+                comments.map((c, index) => (
+                  <ListItem key={index} sx={{ alignItems: "flex-start" }}>
+                    <Avatar sx={{ bgcolor: "gray", mr: 2 }}>👤</Avatar>
+                    <ListItemText primary={c.text} secondary={c.user} />
+                  </ListItem>
+                ))
+              ) : (
+                <Typography>No comments yet. Be the first to comment!</Typography>
+              )}
+            </List>
 
-          <Typography variant="body1" sx={{ mt: 2 }}>
-            {blog.content}
-          </Typography>
-
-          {/* Comment Section */}
-          <Typography variant="h6" sx={{ mt: 3 }}>
-            Comments
-          </Typography>
-          <List>
-            {comments.length > 0 ? (
-              comments.map((c, index) => (
-                <ListItem key={index} sx={{ alignItems: "flex-start" }}>
-                  <Avatar sx={{ bgcolor: "gray", mr: 2 }}>👤</Avatar>
-                  <ListItemText primary={c.text} secondary={c.user} />
-                </ListItem>
-              ))
-            ) : (
-              <Typography>No comments yet. Be the first to comment!</Typography>
-            )}
-          </List>
-
-          {/* Add Comment Form */}
-          <Box sx={{ display: "flex", alignItems: "center", mt: 2 }}>
-            <Avatar sx={{ bgcolor: "gray", mr: 2 }}>👤</Avatar>
-            <TextField
-              placeholder="What's on your mind?"
-              variant="outlined"
-              fullWidth
-              value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
-            />
-            <Button onClick={handleCommentSubmit} variant="contained" color="primary" sx={{ ml: 2 }}>
-              Post
-            </Button>
-          </Box>
-        </CardContent>
-      </Card>
+            {/* Comment Form */}
+            <Box sx={{ display: "flex", alignItems: "center", mt: 2 }}>
+              <Avatar sx={{ bgcolor: "gray", mr: 2 }}>👤</Avatar>
+              <TextField
+                placeholder="What's on your mind?"
+                variant="outlined"
+                fullWidth
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+              />
+              <Button onClick={handleCommentSubmit} variant="contained" color="primary" sx={{ ml: 2 }}>
+                Post
+              </Button>
+            </Box>
+          </CardContent>
+        </Card>
+      </motion.div>
     </Container>
   );
 };

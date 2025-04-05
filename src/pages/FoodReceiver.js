@@ -1,18 +1,32 @@
 import React, { useEffect, useState } from "react";
 import {
-  Button,
   Card,
   CardContent,
   Typography,
   CardMedia,
   Grid,
   IconButton,
+  Button,
+  Backdrop,
+  Snackbar,
+  Slide,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { OrbitProgress } from "react-loading-indicators";
 import api from "../utils/api";
+
+function SlideUpTransition(props) {
+  return <Slide {...props} direction="up" />;
+}
 
 const FoodReceiver = () => {
   const [donations, setDonations] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+  });
+
   const storedUser = JSON.parse(localStorage.getItem("user"));
   const userId = storedUser?._id || storedUser?.user?._id;
   const token = storedUser?.token;
@@ -22,16 +36,20 @@ const FoodReceiver = () => {
   }, []);
 
   const fetchAvailableFood = async () => {
+    setLoading(true);
     try {
       const response = await api.get("/food-donations/available");
       setDonations(response.data);
     } catch (error) {
       console.error("Error fetching food donations:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this donation?")) {
+      setLoading(true);
       try {
         await api.delete(`/food-donations/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -39,21 +57,31 @@ const FoodReceiver = () => {
         fetchAvailableFood();
       } catch (error) {
         console.error("Error deleting donation:", error.response?.data || error.message);
-        alert("Error deleting the donation. Please try again.");
+        setSnackbar({
+          open: true,
+          message: "Error deleting the donation. Please try again.",
+        });
+      } finally {
+        setLoading(false);
       }
     }
   };
 
-  const claimFood = async (foodId) => {
-    try {
-      console.log("🔑 User Token:", token);
-      if (!token) {
-        console.error("❌ No token found in frontend.");
-        return;
-      }
+  const claimFood = async (donation) => {
+    const donorIdStr =
+      donation.donorId?._id?.toString() || donation.donorId?.toString();
+    if (donorIdStr === userId) {
+      setSnackbar({
+        open: true,
+        message: "❌ Self-claiming your own food is not allowed.",
+      });
+      return;
+    }
 
+    setLoading(true);
+    try {
       await api.put(
-        `/food-donations/claim/${foodId}`,
+        `/food-donations/claim/${donation._id}`,
         {},
         {
           headers: {
@@ -61,11 +89,20 @@ const FoodReceiver = () => {
           },
         }
       );
-
-      fetchAvailableFood(); // Refresh list after claiming
+      fetchAvailableFood();
     } catch (error) {
       console.error("❌ Error claiming food:", error.response?.data || error.message);
+      setSnackbar({
+        open: true,
+        message: "Error claiming food. Please try again.",
+      });
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
   };
 
   return (
@@ -73,16 +110,12 @@ const FoodReceiver = () => {
       <Typography variant="h4" gutterBottom>
         Available Food Donations
       </Typography>
+
       {donations.length === 0 ? (
         <Typography>No available donations at the moment.</Typography>
       ) : (
         <Grid container spacing={3}>
           {donations.map((donation) => {
-            // Debug logs
-            console.log("🔍 Donation:", donation);
-            console.log("🔑 donation.donorId:", donation.donorId);
-            console.log("👤 Current userId:", userId);
-
             const donorIdStr =
               donation.donorId?._id?.toString() || donation.donorId?.toString();
             const isOwner = donorIdStr === userId;
@@ -101,33 +134,14 @@ const FoodReceiver = () => {
                   />
                   <CardContent>
                     <Typography variant="h6">{donation.itemName}</Typography>
-                    <Typography>
-                      <strong>Donor Name:</strong> {donation.fullName}
-                    </Typography>
-                    <Typography>
-                      <strong>Contact:</strong> {donation.contactNumber}
-                    </Typography>
-                    <Typography>
-                      <strong>Food Type:</strong> {donation.foodType}
-                    </Typography>
-                    <Typography>
-                      <strong>Weight:</strong> {donation.weight}
-                    </Typography>
-                    <Typography>
-                      <strong>Cooking Date:</strong>{" "}
-                      {new Date(donation.cookingDate).toLocaleDateString()}
-                    </Typography>
-                    <Typography>
-                      <strong>Expiry Date:</strong>{" "}
-                      {new Date(donation.expiryDate).toLocaleDateString()}
-                    </Typography>
-                    <Typography>
-                      <strong>Storage Instructions:</strong>{" "}
-                      {donation.storageInstructions}
-                    </Typography>
-                    <Typography>
-                      <strong>Pickup Address:</strong> {donation.pickupAddress}
-                    </Typography>
+                    <Typography><strong>Donor Name:</strong> {donation.fullName}</Typography>
+                    <Typography><strong>Contact:</strong> {donation.contactNumber}</Typography>
+                    <Typography><strong>Food Type:</strong> {donation.foodType}</Typography>
+                    <Typography><strong>Weight:</strong> {donation.weight}</Typography>
+                    <Typography><strong>Cooking Date:</strong> {new Date(donation.cookingDate).toLocaleDateString()}</Typography>
+                    <Typography><strong>Expiry Date:</strong> {new Date(donation.expiryDate).toLocaleDateString()}</Typography>
+                    <Typography><strong>Storage Instructions:</strong> {donation.storageInstructions}</Typography>
+                    <Typography><strong>Pickup Address:</strong> {donation.pickupAddress}</Typography>
 
                     {donation.status === "claimed" ? (
                       <Button variant="contained" color="secondary" disabled>
@@ -137,14 +151,13 @@ const FoodReceiver = () => {
                       <Button
                         variant="contained"
                         color="primary"
-                        onClick={() => claimFood(donation._id)}
+                        onClick={() => claimFood(donation)}
                       >
                         Claim Food
                       </Button>
                     )}
                   </CardContent>
 
-                  {/* Delete Button (Only Visible to Donor) */}
                   {isOwner && (
                     <IconButton
                       onClick={(e) => {
@@ -167,6 +180,22 @@ const FoodReceiver = () => {
           })}
         </Grid>
       )}
+
+      {/* Full-screen Loader */}
+      <Backdrop open={loading} sx={{ zIndex: 9999, color: "#fff", flexDirection: "column" }}>
+        <OrbitProgress color={["#3160cc", "#cc31ad", "#cc9d31", "#31cc4f"]} size={100} />
+        <Typography mt={2}>Loading...</Typography>
+      </Backdrop>
+
+      {/* Snackbar */}
+      <Snackbar
+        open={snackbar.open}
+        onClose={handleCloseSnackbar}
+        autoHideDuration={3000}
+        message={snackbar.message}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        TransitionComponent={SlideUpTransition}
+      />
     </div>
   );
 };
