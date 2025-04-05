@@ -10,170 +10,189 @@ import {
   Checkbox,
   FormControlLabel,
   Link,
+  CircularProgress,
 } from "@mui/material";
 import { Facebook, Google } from "@mui/icons-material";
 import bgImage from "../assets/bg-cowork.jpeg";
-import { auth, provider, signInWithPopup, signOut } from "../firebaseConfig"; 
-import { useNavigate } from "react-router-dom"; 
+import { auth, provider, signInWithPopup, signOut } from "../firebaseConfig";
+import { useNavigate } from "react-router-dom";
 import AuthContext from "../context/AuthContext";
+import { motion, AnimatePresence } from "framer-motion";
+
+// Reusable Motion Wrapper
+const MotionBox = ({ children }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: -20 }}
+    transition={{ duration: 0.4 }}
+  >
+    {children}
+  </motion.div>
+);
 
 // SignIn Component
-const SignIn = ({ handleGoogleLogin }) => {
+const SignIn = ({ handleGoogleLogin, loading, setLoading }) => {
   const { login } = useContext(AuthContext);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const navigate = useNavigate();  // ✅ Added `navigate` here
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await login(email, password, navigate);  // ✅ Pass `navigate` here
+    setLoading(true);
+    await login(email, password, navigate);
+    setLoading(false);
   };
 
   return (
-    <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-      <Typography align="center">Sign in with:</Typography>
-      <Box display="flex" justifyContent="center" gap={2}>
-        <Button variant="outlined" startIcon={<Facebook color="primary" />} fullWidth>
-          Facebook
-        </Button>
-        <Button
+    <MotionBox>
+      <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <Typography align="center">Sign in with:</Typography>
+        <Box display="flex" justifyContent="center" gap={2}>
+          <Button variant="outlined" startIcon={<Facebook color="primary" />} fullWidth>
+            Facebook
+          </Button>
+          <Button
+            variant="outlined"
+            startIcon={<Google color="primary" />}
+            fullWidth
+            onClick={handleGoogleLogin}
+          >
+            Google
+          </Button>
+        </Box>
+
+        <Typography align="center">or:</Typography>
+
+        <TextField
+          label="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           variant="outlined"
-          startIcon={<Google color="primary" />}
           fullWidth
-          onClick={handleGoogleLogin}
-        >
-          Google
+          required
+        />
+        <TextField
+          label="Password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          variant="outlined"
+          fullWidth
+          required
+        />
+
+        <Box display="flex" justifyContent="space-between" alignItems="center">
+          <FormControlLabel control={<Checkbox />} label="Remember me" />
+          <Link href="#" variant="body2">Forgot password?</Link>
+        </Box>
+
+        <Button type="submit" variant="contained" color="primary" fullWidth disabled={loading}>
+          {loading ? <CircularProgress size={24} color="inherit" /> : "SIGN IN"}
         </Button>
+
+        <Typography align="center">
+          Not a member? <Link href="#">Register</Link>
+        </Typography>
       </Box>
-
-      <Typography align="center">or:</Typography>
-
-      <TextField 
-        label="Email" 
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        variant="outlined" 
-        fullWidth 
-        required 
-      />
-      <TextField 
-        label="Password" 
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        variant="outlined" 
-        fullWidth 
-        required 
-      />
-
-      <Box display="flex" justifyContent="space-between" alignItems="center">
-        <FormControlLabel control={<Checkbox />} label="Remember me" />
-        <Link href="#" variant="body2">Forgot password?</Link>
-      </Box>
-
-      <Button type="submit" variant="contained" color="primary" fullWidth>
-        SIGN IN
-      </Button>
-
-      <Typography align="center">
-        Not a member? <Link href="#">Register</Link>
-      </Typography>
-    </Box>
+    </MotionBox>
   );
 };
 
 // SignUp Component
-const SignUp = ({ handleGoogleLogin }) => {
+const SignUp = ({ handleGoogleLogin, loading, setLoading }) => {
   const { register } = useContext(AuthContext);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const navigate = useNavigate();  // ✅ Added `navigate` here
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await register(name, email, password);
-    alert("✅ Registration successful! Please log in.");
-    navigate("/login");  // ✅ Redirect to login after successful registration
+    setLoading(true);
+    const success = await register(name, email, password);
+    if (success) {
+      alert("✅ Registration successful! Please log in.");
+      navigate("/login");
+    }
+    setLoading(false);
   };
 
   return (
-    <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-      <Typography align="center">Sign up with:</Typography>
-      <Box display="flex" justifyContent="center" gap={2}>
-        <Button variant="outlined" startIcon={<Facebook color="primary" />} fullWidth>
-          Facebook
-        </Button>
-        <Button
+    <MotionBox>
+      <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <Typography align="center">Sign up with:</Typography>
+        <Box display="flex" justifyContent="center" gap={2}>
+          <Button variant="outlined" startIcon={<Facebook color="primary" />} fullWidth>
+            Facebook
+          </Button>
+          <Button
+            variant="outlined"
+            startIcon={<Google color="primary" />}
+            fullWidth
+            onClick={handleGoogleLogin}
+          >
+            Google
+          </Button>
+        </Box>
+
+        <Typography align="center">or:</Typography>
+
+        <TextField
+          label="Full Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
           variant="outlined"
-          startIcon={<Google color="primary" />}
           fullWidth
-          onClick={handleGoogleLogin}
-        >
-          Google
+          required
+        />
+        <TextField
+          label="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          variant="outlined"
+          fullWidth
+          required
+        />
+        <TextField
+          label="Password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          variant="outlined"
+          fullWidth
+          required
+        />
+
+        <Button type="submit" variant="contained" color="primary" fullWidth disabled={loading}>
+          {loading ? <CircularProgress size={24} color="inherit" /> : "SIGN UP"}
         </Button>
       </Box>
-
-      <Typography align="center">or:</Typography>
-
-      <TextField 
-        label="Full Name" 
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        variant="outlined" 
-        fullWidth 
-        required 
-      />
-      <TextField 
-        label="Email" 
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        variant="outlined" 
-        fullWidth 
-        required 
-      />
-      <TextField 
-        label="Password" 
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        variant="outlined" 
-        fullWidth 
-        required 
-      />
-
-      <Button type="submit" variant="contained" color="primary" fullWidth>
-        SIGN UP
-      </Button>
-    </Box>
+    </MotionBox>
   );
 };
 
 function HeaderOne() {
   const [tabValue, setTabValue] = useState(0);
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useContext(AuthContext);
 
-  // Handle Google Login
- // ✅ Corrected Google Sign-In Logic
- const handleGoogleLogin = async () => {
-  try {
-    const result = await signInWithPopup(auth, provider);
-    console.log("✅ User Logged In:", result.user);
+  const handleGoogleLogin = async () => {
+    try {
+      setLoading(true);
+      const result = await signInWithPopup(auth, provider);
+      await login(result.user, null, navigate);
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      console.error("❌ Google Sign-In Error:", error);
+      alert("❌ Google Sign-In Failed. Please try again.");
+    }
+  };
 
-    // Pass navigate as an argument for consistency
-    login(result.user, null, navigate); // ✅ Added 'null' for password and 'navigate'
-
-  } catch (error) {
-    console.error("❌ Google Sign-In Error:", error);
-    alert("❌ Google Sign-In Failed. Please try again.");
-  }
-};
-
-
-
-  // Handle Logout
   const handleLogout = async () => {
     await signOut(auth);
     setUser(null);
@@ -210,10 +229,24 @@ function HeaderOne() {
             <Button variant="contained" color="secondary" fullWidth onClick={handleLogout}>
               LOG OUT
             </Button>
-          ) : tabValue === 0 ? (
-            <SignIn handleGoogleLogin={handleGoogleLogin} />
           ) : (
-            <SignUp handleGoogleLogin={handleGoogleLogin} />
+            <AnimatePresence mode="wait">
+              {tabValue === 0 ? (
+                <SignIn
+                  key="signin"
+                  handleGoogleLogin={handleGoogleLogin}
+                  loading={loading}
+                  setLoading={setLoading}
+                />
+              ) : (
+                <SignUp
+                  key="signup"
+                  handleGoogleLogin={handleGoogleLogin}
+                  loading={loading}
+                  setLoading={setLoading}
+                />
+              )}
+            </AnimatePresence>
           )}
         </Box>
       </Container>
