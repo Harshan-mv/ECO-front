@@ -26,7 +26,7 @@ const FoodReceiver = () => {
     if (window.confirm("Are you sure you want to delete this donation?")) {
       try {
         await api.delete(`/food-donations/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }, // Include token in API request
+          headers: { Authorization: `Bearer ${storedUser.token}` }, // Include token in API request
         });
         fetchAvailableFood();
       } catch (error) {
@@ -38,23 +38,24 @@ const FoodReceiver = () => {
 
   const claimFood = async (foodId) => {
     try {
-      console.log("🔑 User Token:", user?.token); // Check if token exists before request
-      if (!user?.token) {
+      console.log("🔑 User Token:", storedUser?.token);
+      if (!storedUser?.token) {
         console.error("❌ No token found in frontend.");
         return;
       }
   
-      const res = await api.put(`/food/claim/${foodId}`, {}, {
+      await api.put(`/food-donations/claim/${foodId}`, {}, {
         headers: {
-          Authorization: `Bearer ${user.token}`, // Send the JWT token
+          Authorization: `Bearer ${storedUser.token}`,
         },
       });
-  
-      console.log("✅ Food claim response:", res.data);
+      
+      fetchAvailableFood(); // Refresh list after claiming
     } catch (error) {
       console.error("❌ Error claiming food:", error.response?.data || error.message);
     }
   };
+  
 
   return (
     <div style={{ padding: "20px" }}>
