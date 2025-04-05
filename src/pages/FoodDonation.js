@@ -19,9 +19,7 @@ const FoodDonationForm = () => {
     storageInstructions: "",
     pickupAddress: "",
     foodImage: null,
-    
   });
-
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -78,7 +76,14 @@ const FoodDonationForm = () => {
     }
 
     try {
-      const response = await api.post("/food-donations", formDataToSend);
+      const response = await api.post("/food-donations", formDataToSend, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${storedUser?.token}`,
+        },
+        withCredentials: true, // optional, depends on backend setup
+      });
+
       alert("Donation Submitted Successfully!");
       console.log("Response:", response.data);
       navigate("/dashboard");
@@ -109,7 +114,10 @@ const FoodDonationForm = () => {
 
       <FormControl fullWidth margin="normal">
         <InputLabel>Food Type</InputLabel>
-        <Select value={formData.foodType} onChange={(e) => setFormData({ ...formData, foodType: e.target.value })}>
+        <Select
+          value={formData.foodType}
+          onChange={(e) => setFormData({ ...formData, foodType: e.target.value })}
+        >
           <MenuItem value="Perishable">Perishable</MenuItem>
           <MenuItem value="None">None</MenuItem>
           <MenuItem value="Non-perishable">Non-perishable</MenuItem>
@@ -172,12 +180,12 @@ const FoodDonationForm = () => {
 
       <input type="file" accept="image/*" onChange={handleImageChange} style={{ margin: "10px 0" }} />
       {formData.foodImage && (
-          <img
-            src={URL.createObjectURL(formData.foodImage)}
-            alt="Preview"
-            style={{ maxWidth: "100%", margin: "10px 0" }}
-          />
-        )}
+        <img
+          src={URL.createObjectURL(formData.foodImage)}
+          alt="Preview"
+          style={{ maxWidth: "100%", margin: "10px 0" }}
+        />
+      )}
 
       <Button type="submit" variant="contained" color="primary" fullWidth>
         Submit
