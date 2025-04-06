@@ -13,7 +13,8 @@ import {
   ListItemText,
   Avatar,
   Box,
-  Backdrop
+  Backdrop,
+  Grid
 } from "@mui/material";
 import { OrbitProgress } from "react-loading-indicators";
 import { motion } from "framer-motion";
@@ -57,7 +58,7 @@ const BlogDetails = () => {
 
     try {
       await api.post(`/blogs/${id}/comments`, newComment);
-      setComments([...comments, newComment]);
+      setComments((prevComments) => [...prevComments, newComment]);
       setCommentText("");
     } catch (error) {
       console.error("❌ Failed to add comment:", error.message);
@@ -82,59 +83,89 @@ const BlogDetails = () => {
   }
 
   return (
-    <Container maxWidth="md">
+    <Container maxWidth="lg">
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
-        <Card sx={{ mt: 3 }}>
-          {blog.image && (
-            <CardMedia component="img" height="400" image={blog.image} alt={blog.title} />
-          )}
-          <CardContent>
-            <Typography variant="h4" fontWeight="bold" gutterBottom>
-              {blog.title}
-            </Typography>
-            <Typography variant="body2" color="textSecondary" gutterBottom>
-              Author: <strong>{blog.author}</strong>
-            </Typography>
-            <Typography variant="body2" color="textSecondary" gutterBottom>
-              Published on: <strong>{formatDate(blog.createdAt)}</strong>
-            </Typography>
-            <Typography variant="body1" sx={{ mt: 2 }}>{blog.content}</Typography>
-
-            {/* Comments */}
-            <Typography variant="h6" sx={{ mt: 3 }}>Comments</Typography>
-            <List>
-              {comments.length > 0 ? (
-                comments.map((c, index) => (
-                  <ListItem key={index} sx={{ alignItems: "flex-start" }}>
-                    <Avatar sx={{ bgcolor: "gray", mr: 2 }}>👤</Avatar>
-                    <ListItemText primary={c.text} secondary={c.user} />
-                  </ListItem>
-                ))
-              ) : (
-                <Typography>No comments yet. Be the first to comment!</Typography>
+        <Grid container spacing={2} mt={3}>
+          {/* Main Content */}
+          <Grid item xs={12} md={9}>
+            <Card>
+              {blog.image && (
+                <CardMedia
+                  component="img"
+                  height="400"
+                  image={blog.image}
+                  alt={blog.title}
+                />
               )}
-            </List>
+              <CardContent>
+                <Typography variant="h4" fontWeight="bold" gutterBottom>
+                  {blog.title}
+                </Typography>
+                <Typography variant="body2" color="textSecondary" gutterBottom>
+                  Author: <strong>{typeof blog.author === "object" ? blog.author.name : blog.author}</strong>
+                </Typography>
+                <Typography variant="body2" color="textSecondary" gutterBottom>
+                  Published on: <strong>{formatDate(blog.createdAt)}</strong>
+                </Typography>
+                <Typography variant="body1" sx={{ mt: 2 }}>
+                  {blog.content}
+                </Typography>
 
-            {/* Comment Form */}
-            <Box sx={{ display: "flex", alignItems: "center", mt: 2 }}>
-              <Avatar sx={{ bgcolor: "gray", mr: 2 }}>👤</Avatar>
-              <TextField
-                placeholder="What's on your mind?"
-                variant="outlined"
-                fullWidth
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-              />
-              <Button onClick={handleCommentSubmit} variant="contained" color="primary" sx={{ ml: 2 }}>
-                Post
-              </Button>
+                {/* Comments Section */}
+                <Typography variant="h6" sx={{ mt: 3 }}>
+                  Comments
+                </Typography>
+                <List>
+                  {comments.length > 0 ? (
+                    comments.map((c, index) => (
+                      <ListItem key={index} sx={{ alignItems: "flex-start" }}>
+                        <Avatar sx={{ bgcolor: "gray", mr: 2 }}>👤</Avatar>
+                        <ListItemText primary={c.text} secondary={c.user} />
+                      </ListItem>
+                    ))
+                  ) : (
+                    <Typography sx={{ ml: 2, mt: 1, fontStyle: "italic" }}>
+                      No comments yet. Be the first to comment!
+                    </Typography>
+                  )}
+                </List>
+
+                {/* Comment Form */}
+                <Box sx={{ display: "flex", alignItems: "center", mt: 2, gap: 2 }}>
+                  <Avatar sx={{ bgcolor: "gray" }}>👤</Avatar>
+                  <TextField
+                    placeholder="What's on your mind?"
+                    variant="outlined"
+                    fullWidth
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                  />
+                  <Button
+                    onClick={handleCommentSubmit}
+                    variant="contained"
+                    color="primary"
+                    sx={{ whiteSpace: "nowrap" }}
+                  >
+                    Post
+                  </Button>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Sidebar Placeholder */}
+          <Grid item xs={12} md={3}>
+            {/* Sidebar content goes here */}
+            <Box sx={{ p: 2, bgcolor: 'background.paper' }}>
+              <Typography variant="h6">Sidebar</Typography>
+              {/* Add sidebar components or content here */}
             </Box>
-          </CardContent>
-        </Card>
+          </Grid>
+        </Grid>
       </motion.div>
     </Container>
   );

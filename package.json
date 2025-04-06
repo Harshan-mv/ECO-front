@@ -57,8 +57,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "devDependencies": {
-    "cpx": "^1.5.0"
   }
 }
