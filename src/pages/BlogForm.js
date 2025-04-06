@@ -66,7 +66,6 @@ const BlogForm = () => {
     try {
       setLoading(true);
       const res = await api.post("/blogs", newBlog);
-      console.log("✅ Blog Created:", res.data);
       alert("✅ Blog published successfully!");
       navigate("/dashboard");
     } catch (error) {

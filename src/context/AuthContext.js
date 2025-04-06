@@ -6,7 +6,7 @@ const AuthContext = createContext();
 const authReducer = (state, action) => {
   switch (action.type) {
     case "LOGIN":
-      console.log("✅ AuthContext Updated:", action.payload);
+      
       return { ...state, isAuthenticated: true, user: action.payload };
     case "LOGOUT":
       localStorage.removeItem("user");
@@ -53,8 +53,6 @@ export const AuthProvider = ({ children }) => {
 
         localStorage.setItem("user", JSON.stringify(userData));
         dispatch({ type: "LOGIN", payload: userData });
-
-        console.log("✅ Google Sign-In Successful:", userData);
         navigate?.("/dashboard");
         return;
       }
@@ -65,8 +63,6 @@ export const AuthProvider = ({ children }) => {
 
       localStorage.setItem("user", JSON.stringify(data));
       dispatch({ type: "LOGIN", payload: data });
-
-      console.log("✅ AuthContext Updated:", data);
       navigate?.("/dashboard");
     } catch (error) {
       console.error("❌ Login Error:", error.response?.data?.message || "Login failed");

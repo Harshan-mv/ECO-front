@@ -24,4 +24,4 @@ root.render(
 serviceWorker.register();
 
 // Performance monitoring (optional)
-reportWebVitals(console.log);
+//reportWebVitals(console.log);

@@ -54,7 +54,7 @@ const GreenScoreForm = () => {
         logger: (m) => console.log(m),
       })
         .then(({ data: { text } }) => {
-          console.log("OCR Result:", text);
+          
           processOCRData(text);
         })
         .catch((err) => console.error("OCR Error:", err))
